@@ -10,9 +10,6 @@ import (
 )
 
 const maxGuess uint8 = 6
-const colorGreen string = "\033[32m"
-const colorYellow string = "\033[33m"
-const colorReset string = "\033[0m"
 
 type Game struct {
 	// configure Game parameters
@@ -21,7 +18,7 @@ type Game struct {
 	// specifics of this Game
 	Target    string
 	GuessList [maxGuess]string
-	Correcter map[string][]string
+	Correcter map[string][5][2]bool
 	GuessNum  uint8
 	Success   bool
 }
@@ -31,11 +28,13 @@ type Game struct {
 func (e *Game) Guess(guess string) {
 	// takes a VALID guess and updates the Game struct with the guess, returns true if the
 	// guess matches the Target.
-
+	var err error
+	guess, err = e.ConditionGuess(guess)
+	if err != nil {
+	}
 	e.Correcter[guess] = e.GuessCorrecter(guess)
 	e.GuessList[e.GuessNum] = guess
 	e.GuessNum++
-
 	if guess == e.Target {
 		e.Success = true
 	}
@@ -45,38 +44,37 @@ func (e Game) checkWord(guess string) (bool, error) {
 	// checks if the word is in the dictionary of valid words
 	var validWord bool
 	guess = strings.TrimSpace(strings.ToLower(guess))
-
-	if utf8.ValidString(guess) {
-		return false, errors.New("String includes non-ascii charachters. Valid guesses must be english letters")
-	} else if utf8.RuneCountInString(guess) != 6 {
-		return false, errors.New("A valid guess must have 6 letters")
+	var err error
+	if utf8.RuneCountInString(guess) != len(guess) {
+		err = errors.New("string includes non-ascii charachters. valid guesses must be english letters")
+	} else if utf8.RuneCountInString(guess) != 5 {
+		err = errors.New("a valid guess must have 5 letters")
 	} else {
 		for _, wrd := range e.ValidWords {
 			if strings.Compare(wrd, guess) == 0 {
 				validWord = true
 				break
 			} else {
-				continue
+				err = errors.New("word not in list")
 			}
 		}
 	}
-	return validWord, nil
+	return validWord, err
 }
 
 func (e Game) ConditionGuess(guess string) (string, error) {
 	var validWord bool
-	var checkWordErr error
+	var err error
 	guess = strings.TrimSpace(strings.ToLower(guess))
-	validWord, checkWordErr = e.checkWord(guess)
-	if checkWordErr != nil {
-		if validWord {
-			return guess, nil
-		} else {
-			return guess, errors.New("word not in list")
-		}
+	validWord, err = e.checkWord(guess)
+	if err != nil {
+		return guess, err
+	} else if validWord {
+		return guess, nil
 	} else {
-		return guess, checkWordErr
+		return guess, err
 	}
+
 }
 
 func WordListReader(fileName string) ([]string, error) {
@@ -100,7 +98,7 @@ func WordListReader(fileName string) ([]string, error) {
 	return lines, err
 }
 
-func (e Game) GuessCorrecter(guess string) []string {
+func (e Game) GuessCorrecter(guess string) [5][2]bool {
 	var checkArr [5][2]bool
 	for idx, char1 := range guess {
 		if byte(char1) == e.Target[idx] {
@@ -117,15 +115,5 @@ func (e Game) GuessCorrecter(guess string) []string {
 
 	}
 
-	correctionArr := make([]string, 5)
-	for i := range 5 {
-		if checkArr[i][0] && checkArr[i][1] {
-			correctionArr[i] = colorGreen
-		} else if checkArr[i][0] || checkArr[i][1] {
-			correctionArr[i] = colorYellow
-		} else {
-			correctionArr[i] = colorReset
-		}
-	}
-	return correctionArr
+	return checkArr
 }
