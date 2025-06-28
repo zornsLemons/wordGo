@@ -8,6 +8,53 @@ import (
 	"github.com/zornsLemons/wordGo/pkg/engine"
 )
 
+func formatOutputString(cmap []string, guess string) string {
+	var s string
+	for i := range 5 {
+		s = s + cmap[i] + string(guess[i])
+	}
+	return s
+}
+func stringColor(checkArr [5][2]bool) []string {
+	const colorGreen string = "\033[32m"
+	const colorYellow string = "\033[33m"
+	const colorReset string = "\033[0m"
+	correctionArr := make([]string, 5)
+	for i := range 5 {
+		if checkArr[i][0] && checkArr[i][1] {
+			correctionArr[i] = colorGreen
+		} else if checkArr[i][0] || checkArr[i][1] {
+			correctionArr[i] = colorYellow
+		} else {
+			correctionArr[i] = colorReset
+		}
+	}
+	return correctionArr
+}
+
+func formatOutputString(cmap []string, guess string) string {
+	var s string
+	for i := range 5 {
+		s = s + cmap[i] + string(guess[i])
+	}
+	return s
+}
+func stringColor(checkArr [5][2]bool) []string {
+	const colorGreen string = "\033[32m"
+	const colorYellow string = "\033[33m"
+	const colorReset string = "\033[0m"
+	correctionArr := make([]string, 5)
+	for i := range 5 {
+		if checkArr[i][0] && checkArr[i][1] {
+			correctionArr[i] = colorGreen
+		} else if checkArr[i][0] || checkArr[i][1] {
+			correctionArr[i] = colorYellow
+		} else {
+			correctionArr[i] = colorReset
+		}
+	}
+	return correctionArr
+}
 func main() {
 
 	var wordList []string
@@ -44,27 +91,4 @@ func main() {
 		// todo add discord bot
 	}
 
-}
-func formatOutputString(cmap []string, guess string) string {
-	var s string
-	for i := range 5 {
-		s = s + cmap[i] + string(guess[i])
-	}
-	return s
-}
-func stringColor(checkArr [5][2]bool) []string {
-	const colorGreen string = "\033[32m"
-	const colorYellow string = "\033[33m"
-	const colorReset string = "\033[0m"
-	correctionArr := make([]string, 5)
-	for i := range 5 {
-		if checkArr[i][0] && checkArr[i][1] {
-			correctionArr[i] = colorGreen
-		} else if checkArr[i][0] || checkArr[i][1] {
-			correctionArr[i] = colorYellow
-		} else {
-			correctionArr[i] = colorReset
-		}
-	}
-	return correctionArr
 }
