@@ -35,7 +35,7 @@ func (e *Game) Guess(guess string) {
 	}
 	e.Correcter[guess] = e.GuessCorrecter(guess)
 	e.GuessList[e.GuessNum] = guess
-	e.GuessNum++
+
 	if guess == e.Target {
 		e.Success = true
 	}
@@ -55,9 +55,11 @@ func (e Game) checkWord(guess string) (bool, error) {
 			if strings.Compare(wrd, guess) == 0 {
 				validWord = true
 				break
-			} else {
-				err = errors.New("word not in list")
 			}
+		}
+		if !validWord {
+			fmt.Println("word not in list")
+			fmt.Println("Choose a valid 5 letter word")
 		}
 	}
 	return validWord, err
@@ -140,16 +142,17 @@ func stringColor(checkArr [5][2]bool) []string {
 			correctionArr[i] = colorReset
 		}
 	}
+
 	return correctionArr
 }
 
+// FIXME: Implement bad word handling in the GameLoop function
 func (e Game) GameLoop() bool {
 	var err error
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter your guess -> ")
 	guess, _ := reader.ReadString('\n')
 	guess, err = e.ConditionGuess(guess)
-
 	e.Guess(guess)
 
 	if err != nil {
@@ -163,6 +166,8 @@ func (e Game) GameLoop() bool {
 	}
 	if guess != e.Target && e.GuessNum < maxGuess {
 		fmt.Println(formatOutputString(stringColor(e.GuessCorrecter(guess)), guess))
+		fmt.Print("\033[0m")
+		e.GuessNum++
 		return true
 	}
 	if guess != e.Target && e.GuessNum == maxGuess {
