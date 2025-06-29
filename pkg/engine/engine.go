@@ -3,6 +3,7 @@ package engine
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -116,4 +117,59 @@ func (e Game) GuessCorrecter(guess string) [5][2]bool {
 	}
 
 	return checkArr
+}
+
+func formatOutputString(cmap []string, guess string) string {
+	var s string
+	for i := range 5 {
+		s = s + cmap[i] + string(guess[i])
+	}
+	return s
+}
+func stringColor(checkArr [5][2]bool) []string {
+	const colorGreen string = "\033[32m"
+	const colorYellow string = "\033[33m"
+	const colorReset string = "\033[0m"
+	correctionArr := make([]string, 5)
+	for i := range 5 {
+		if checkArr[i][0] && checkArr[i][1] {
+			correctionArr[i] = colorGreen
+		} else if checkArr[i][0] || checkArr[i][1] {
+			correctionArr[i] = colorYellow
+		} else {
+			correctionArr[i] = colorReset
+		}
+	}
+	return correctionArr
+}
+
+func (e Game) GameLoop() bool {
+	var err error
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter your guess -> ")
+	guess, _ := reader.ReadString('\n')
+	guess, err = e.ConditionGuess(guess)
+
+	e.Guess(guess)
+
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	if guess == e.Target {
+		fmt.Println("You win!")
+		fmt.Println(formatOutputString(stringColor(e.GuessCorrecter(guess)), guess))
+		return false
+	}
+	if guess != e.Target && e.GuessNum < maxGuess {
+		fmt.Println(formatOutputString(stringColor(e.GuessCorrecter(guess)), guess))
+		return true
+	}
+	if guess != e.Target && e.GuessNum == maxGuess {
+		fmt.Println("You lose!")
+		fmt.Println("The word was:", e.Target)
+		return false
+	}
+	fmt.Println("Invalid input")
+	return false
 }
